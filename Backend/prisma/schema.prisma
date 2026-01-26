@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ReportStatus {
+  open
+  in_progress
+  resolved
+  closed
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  username      String?
+  phoneNo       String?
+  role          Role           @default(USER)
+  createdAt     DateTime       @default(now())
+  reports       Report[]       @relation("UserReports")
+  confirmations Confirmation[]
+  disputes      Dispute[]
+}
+
+model Report {
+  id               String         @id @default(cuid())
+  description      String
+  type             String
+  status           ReportStatus   @default(open)
+  isMocked         Boolean        @default(false)
+  accuracy         Float?
+  userConfirmed    Boolean        @default(false)
+  remarks          String[]
+  streetName       String?
+  streetNumber     String?
+  city             String?
+  region           String?
+  isoCountryCode   String?
+  postalCode       String?
+  formattedAddress String?
+  latitude         Float
+  longtitude       Float
+  beforeImage      String?
+  afterImage       String?
+  createdAt        DateTime       @default(now())
+  resolvedAt       DateTime?
+  userId           String
+  user             User           @relation("UserReports", fields: [userId], references: [id])
+  confirmations    Confirmation[]
+  disputes         Dispute[]
+}
+
+model Confirmation {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  reportId String
+  report   Report @relation(fields: [reportId], references: [id])
+
+  @@unique([reportId, userId])
+}
+
+model Dispute {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  reportId String
+  report   Report @relation(fields: [reportId], references: [id])
+
+  @@unique([reportId, userId])
+}
