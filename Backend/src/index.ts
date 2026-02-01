@@ -1,7 +1,9 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import {prisma} from './config/db'
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import { prisma } from "./config/db";
+import routes from "./routes/routes";
+import { ErrorHandler } from "./middleware/ErrorHandler";
 
 dotenv.config();
 
@@ -9,10 +11,12 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-
 app.use(cors());
-app.use(express.json())
+app.use(express.json());
 
+app.use("/api/v1", routes);
+
+app.use(ErrorHandler);
 async function startServer() {
   try {
     console.log("⏳ Connecting to the database...");
