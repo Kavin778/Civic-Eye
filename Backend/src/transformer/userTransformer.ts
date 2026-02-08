@@ -1,8 +1,8 @@
 import { User } from "@prisma/client";
-import { CreateUserResponse } from "../dto/userDTO";
+import { UserResponse } from "../dto/userDTO";
 
 export class userTransformer {
-  static createUserTransformer(data: User): CreateUserResponse {
+  static createUserTransformer(data: User): UserResponse {
     return {
       id: data.id,
       email: data.email,

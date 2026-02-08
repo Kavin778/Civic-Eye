@@ -35,3 +35,18 @@ export const findUserByEmailRepo = async (
     throw new HttpError(500, "Internal Server Error");
   }
 };
+
+export const findUserByIdRepo = async (id : string) : Promise<User | null> =>{
+  try{
+    const response = await prisma.user.findUnique({
+      where:{
+        id:id
+      }
+    })
+
+    return response;
+  }
+  catch(error){
+    throw new HttpError(500,"Error while fetching the user");
+  }
+}
