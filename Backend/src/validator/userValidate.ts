@@ -15,3 +15,7 @@ export const createUserSchema = z.object({
 });
 
 export type createUserType = z.infer<typeof createUserSchema>;
+
+export const userIdSchema = z.cuid({ message: "Invalid CUID" });
+
+export type userIdType = z.infer<typeof userIdSchema>;
