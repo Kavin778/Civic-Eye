@@ -1,15 +1,16 @@
-import express from "express";
+import express, { Application } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { prisma } from "./config/db";
 import routes from "./routes/routes";
 import { ErrorHandler } from "./middleware/ErrorHandler";
+import { redisClient } from "./config/redis";
 
 dotenv.config();
 
-const app = express();
+const app : Application =  express();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000
 
 app.use(cors());
 app.use(express.json());
@@ -22,6 +23,8 @@ async function startServer() {
     console.log("⏳ Connecting to the database...");
     await prisma.$connect();
     console.log("✅ Database connected successfully!");
+    await redisClient.connect();
+    console.log("Redis connected successfully");
 
     app.listen(PORT, () => {
       console.log(`🚀 Server is running on http://localhost:${PORT}`);
