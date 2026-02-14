@@ -28,11 +28,6 @@ export const createReportRepo = async (data: createReportType): Promise<Report> 
 
     return response;
   } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            if (error.code === "P2003") {
-                throw new HttpError(400, "Invalid user id");
-            }
-        }
-        throw new HttpError(500, "Something went wrong");
-    }
+        throw new HttpError(422, "Unable to create the report");
+  }
 };
