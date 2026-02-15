@@ -3,21 +3,22 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { prisma } from "./config/db";
 import routes from "./routes/routes";
-import { ErrorHandler } from "./middleware/ErrorHandler";
+import { errorMiddleware } from "./middleware/errorMiddleware";
 import { redisClient } from "./config/redis";
+import "./types/requestType";
 
 dotenv.config();
 
-const app : Application =  express();
+const app: Application = express();
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
 app.use("/api/v1", routes);
 
-app.use(ErrorHandler);
+app.use(errorMiddleware);
 async function startServer() {
   try {
     console.log("⏳ Connecting to the database...");
