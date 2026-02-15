@@ -2,11 +2,15 @@ import { User } from "@prisma/client";
 import { prisma } from "../config/db";
 import { createUserType } from "../validator/userValidate";
 import { HttpError } from "../error/HttpError";
+import { prismaTransaction } from "../types/prismaType";
 
-export const createUserRepo = async (data: createUserType): Promise<User> => {
+export const createUserRepo = async (
+  client: prismaTransaction,
+  data: createUserType,
+): Promise<User> => {
   try {
     const { email, password, username, phoneNo } = data;
-    const response = await prisma.user.create({
+    const response = await client.user.create({
       data: {
         email,
         password,
@@ -21,7 +25,7 @@ export const createUserRepo = async (data: createUserType): Promise<User> => {
 };
 
 export const findUserByEmailRepo = async (
-  email: string
+  email: string,
 ): Promise<User | null> => {
   try {
     const response = await prisma.user.findUnique({
@@ -36,17 +40,16 @@ export const findUserByEmailRepo = async (
   }
 };
 
-export const findUserByIdRepo = async (id : string) : Promise<User | null> =>{
-  try{
+export const findUserByIdRepo = async (id: string): Promise<User | null> => {
+  try {
     const response = await prisma.user.findUnique({
-      where:{
-        id:id
-      }
-    })
+      where: {
+        id: id,
+      },
+    });
 
     return response;
+  } catch (error) {
+    throw new HttpError(500, "Error while fetching the user");
   }
-  catch(error){
-    throw new HttpError(500,"Error while fetching the user");
-  }
-}
+};
