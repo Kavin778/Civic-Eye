@@ -24,6 +24,11 @@ enum ReportStatus {
   closed
 }
 
+enum VoteType{
+  upvote
+  downvote
+}
+
 model User {
   id            String         @id @default(cuid())
   email         String         @unique
@@ -33,8 +38,8 @@ model User {
   role          Role           @default(USER)
   createdAt     DateTime       @default(now())
   reports       Report[]       @relation("UserReports")
-  confirmations Confirmation[]
-  disputes      Dispute[]
+  votes         Votes[]
+  sessions      Session[]
 }
 
 model Report {
@@ -55,18 +60,18 @@ model Report {
   formattedAddress String?
   latitude         Float
   longtitude       Float
-  beforeImage      String?
+  beforeImage      String
   afterImage       String?
   createdAt        DateTime       @default(now())
   resolvedAt       DateTime?
   userId           String
   user             User           @relation("UserReports", fields: [userId], references: [id])
-  confirmations    Confirmation[]
-  disputes         Dispute[]
+  votes            Votes[]
 }
 
-model Confirmation {
+model Votes {
   id       String @id @default(cuid())
+  type     VoteType
   userId   String
   user     User   @relation(fields: [userId], references: [id])
   reportId String
@@ -75,12 +80,14 @@ model Confirmation {
   @@unique([reportId, userId])
 }
 
-model Dispute {
-  id       String @id @default(cuid())
-  userId   String
-  user     User   @relation(fields: [userId], references: [id])
-  reportId String
-  report   Report @relation(fields: [reportId], references: [id])
-
-  @@unique([reportId, userId])
+model Session{
+  id        String  @id @default(cuid())
+  token     String  @unique
+  userId    String
+  user      User    @relation(fields:[userId],references:[id],onDelete:Cascade)
+  ipAddress String? 
+  replacedBy  String?
+  revoked   Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
 }

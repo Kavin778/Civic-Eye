@@ -1,4 +1,4 @@
-import { success } from "zod";
+import { IPVersion } from "node:net";
 import { CacheKeys } from "../cache/cacheKeys";
 import { CacheService } from "../cache/redisClient";
 import { UserResponse, UserResponseDTO } from "../dto/userDTO";
@@ -9,26 +9,51 @@ import {
   findUserByIdRepo,
 } from "../repo/userRepo";
 import { userTransformer } from "../transformer/userTransformer";
+import { HashService } from "../utils/hash";
 import { createUserType, userIdType } from "../validator/userValidate";
+import { sessionCreationService } from "./authService";
+import { authTransformer } from "../transformer/authTransformer";
+import { prisma } from "../config/db";
+import { createSessionRepo } from "../repo/authRepo";
+import { generateAuthenticationTokens } from "../utils/tokenUtils";
 
 export const createUserService = async (
-  data: createUserType
+  data: createUserType,
+  userIp: string,
 ): Promise<UserResponseDTO<UserResponse>> => {
   try {
     const isUserExists = await findUserByEmailRepo(data.email);
     if (isUserExists) {
       throw new HttpError(409, "User already exists");
     }
-    const response = await createUserRepo(data);
+    const hashService = new HashService();
+    const hashedPassword = await hashService.passwordHash(data.password);
 
-    const transformedResponse = userTransformer.createUserTransformer(response);
+    const userData = { ...data, password: hashedPassword };
 
-    return {
-      success: true,
-      statusCode: 201,
-      message: "User created successfully",
-      data: transformedResponse,
-    };
+    return await prisma.$transaction(async (tx) => {
+      const response = await createUserRepo(tx, userData);
+
+      const payload = authTransformer.authTokenPayloadTransformer(response);
+
+      const sessionResponse = await sessionCreationService(payload, userIp);
+
+      await createSessionRepo(tx, sessionResponse);
+
+      const tokens = generateAuthenticationTokens(payload);
+
+      const transformedResponse = userTransformer.createUserTransformer(
+        response,
+        tokens,
+      );
+
+      return {
+        success: true,
+        statusCode: 201,
+        message: "User created successfully",
+        data: transformedResponse,
+      };
+    });
   } catch (error) {
     if (error instanceof HttpError) {
       throw error;
@@ -37,7 +62,9 @@ export const createUserService = async (
   }
 };
 
-export const getUserService = async (data: userIdType):Promise<UserResponseDTO<UserResponse>> => {
+export const getUserService = async (
+  data: userIdType,
+): Promise<UserResponseDTO<UserResponse>> => {
   try {
     const cacheKey = CacheKeys.userById(data);
 
@@ -59,7 +86,7 @@ export const getUserService = async (data: userIdType):Promise<UserResponseDTO<U
     }
 
     const transformedResponse =
-      userTransformer.createUserTransformer(dbResponse);
+      userTransformer.userProfileTransformer(dbResponse);
 
     await CacheService.set(cacheKey, transformedResponse, 3600);
 
