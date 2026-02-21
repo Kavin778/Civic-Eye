@@ -8,4 +8,8 @@ export class CacheKeys{
     static allUsers(){
         return `users:all`
     }
+
+    static reportById(id: string){
+        return `report:${id}`
+    }
 }
