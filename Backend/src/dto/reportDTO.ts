@@ -26,4 +26,8 @@ export type reportResponseDTO<T> = {
     statusCode :number;
     message : string;
     data : T;
+    page?: number;
+    limit?: number;
+    totalRecords?: number;
+    totalPages?: number;
 };

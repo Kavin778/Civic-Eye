@@ -12,4 +12,8 @@ export class CacheKeys{
     static reportById(id: string){
         return `report:${id}`
     }
+
+    static allReports(page: number, limit: number){
+        return `reports:page=${page}:limit=${limit}`;
+    }
 }

@@ -45,3 +45,23 @@ export const findReportById = async (id : string) : Promise<Report | null> => {
       throw new HttpError(500, "Error while fetching report");
   }
 };
+
+export const findAllReports = async (skip: number, limit: number): Promise<Report[]> => {
+  try{
+    const response = await prisma.report.findMany({
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt : "desc",
+      }
+    });
+
+    return response;
+  } catch(error){
+      throw new HttpError(500, "Error while fetching report");
+  }
+};
+
+export const countReports = async(): Promise<number> => {
+  return await prisma.report.count();
+}
