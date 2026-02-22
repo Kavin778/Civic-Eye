@@ -63,5 +63,11 @@ export const findAllReports = async (skip: number, limit: number): Promise<Repor
 };
 
 export const countReports = async(): Promise<number> => {
-  return await prisma.report.count();
-}
+  try{
+    const response = await prisma.report.count();
+
+    return response;
+  } catch(error){
+      throw new HttpError(500, "Error while fetching report count");
+  }
+};
