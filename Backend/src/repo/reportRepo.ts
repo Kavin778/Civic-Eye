@@ -31,3 +31,43 @@ export const createReportRepo = async (data: createReportType): Promise<Report> 
         throw new HttpError(422, "Unable to create the report");
   }
 };
+
+export const findReportById = async (id : string) : Promise<Report | null> => {
+  try{
+    const response = await prisma.report.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    return response;
+  } catch(error){
+      throw new HttpError(500, "Error while fetching report");
+  }
+};
+
+export const findAllReports = async (skip: number, limit: number): Promise<Report[]> => {
+  try{
+    const response = await prisma.report.findMany({
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt : "desc",
+      }
+    });
+
+    return response;
+  } catch(error){
+      throw new HttpError(500, "Error while fetching report");
+  }
+};
+
+export const countReports = async(): Promise<number> => {
+  try{
+    const response = await prisma.report.count();
+
+    return response;
+  } catch(error){
+      throw new HttpError(500, "Error while fetching report count");
+  }
+};
